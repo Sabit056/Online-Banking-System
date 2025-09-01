@@ -116,7 +116,7 @@ public class CustomerDaoImplementation implements CustomerDao{
     @Override
     public int transferMoney(int fromAccountNo, int toAccountNo, int amount) throws CustomerException {
         if(viewBalance(fromAccountNo) < amount){
-            throw new CustomerException("Insufficient Balance");
+            throw new CustomerException("Insufficient Balance to transfer" );
         }
         if(withdrawMoney(fromAccountNo,amount) > 0 && depositMoney(toAccountNo,amount) > 0){
             return 1;

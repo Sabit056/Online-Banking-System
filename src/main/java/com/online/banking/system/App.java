@@ -22,6 +22,7 @@ public class App {
             System.out.println("-------------------------------------------");
             System.out.println("1. ADMIN Login " + "\r\n" +
                                 "2. CUSTOMER Login " + "\r\n"+
+                                "0. Sign Out "+
                                 "..................");
             System.out.print("Select your option : ");
 
@@ -45,7 +46,7 @@ public class App {
                             break;
                         }
 
-                        System.out.println("Login Successful...! Welcome " + admin.getUserName() + "!\n");
+                        System.out.println("Login Successful...! Welcome " + admin.getUserName().toUpperCase() + "!\n");
 
                         boolean y = true;
 
@@ -222,11 +223,22 @@ public class App {
                                 }
                             }
 
-
+                            if(opt == 0){
+                                System.out.println("Logged Out Successfully");
+                                z = false;
+                            }
                         }
-                    } catch (Exception e) {
+                        break;
+                    } catch (CustomerException e) {
                         System.out.println(e.getMessage());
                     }
+                    break;
+                case 0:
+                    System.out.println("Thank You for Using Online Banking System. Goodbye!");
+                    flag = false;
+                    break;
+                default:
+                    System.out.println("Invalid Option. Please Try Again.");
             }
         }
     }
