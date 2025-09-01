@@ -9,15 +9,28 @@ public class Customer {
     private String customerAddress;
     private String customerContact;
     private String customerPassword;
-    private int customerBalance;
+//    private int customerBalance;
 
-    public int getCustomerBalance() {
-        return customerBalance;
+    public Customer(int customerAccountNo, String customerName, String customerEmail, String customerAddress, String customerContact, String customerPassword) {
+        this.customerAccountNo = customerAccountNo;
+        this.customerName = customerName;
+        this.customerEmail = customerEmail;
+        this.customerAddress = customerAddress;
+        this.customerContact = customerContact;
+        this.customerPassword = customerPassword;
+//        this.customerBalance = customerBalance;
+    }
+    public Customer() {
+        super();
     }
 
-    public void setCustomerBalance(int customerBalance) {
-        this.customerBalance = customerBalance;
-    }
+//    public int getCustomerBalance() {
+//        return customerBalance;
+//    }
+//
+//    public void setCustomerBalance(int customerBalance) {
+//        this.customerBalance = customerBalance;
+//    }
 
     @Override
     public boolean equals(Object o) {
@@ -75,30 +88,15 @@ public class Customer {
         this.customerAccountNo = customerAccountNo;
     }
 
-    public Customer(int customerAccountNo, String customerName, String customerEmail, String customerAddress, String customerContact, String customerPassword, int customerBalance) {
-        this.customerAccountNo = customerAccountNo;
-        this.customerName = customerName;
-        this.customerEmail = customerEmail;
-        this.customerAddress = customerAddress;
-        this.customerContact = customerContact;
-        this.customerPassword = customerPassword;
-        this.customerBalance = customerBalance;
-    }
-    public Customer() {
-        super();
-    }
-
     @Override
     public String toString() {
-        return "Customer{" +
-                "customerAccountNo=" + customerAccountNo +
-                ", customerName='" + customerName + '\'' +
-                ", customerEmail='" + customerEmail + '\'' +
-                ", customerAddress='" + customerAddress + '\'' +
-                ", customerContact='" + customerContact + '\'' +
-                ", customerPassword='" + customerPassword + '\'' +
-                ", customerBalance=" + customerBalance +
-                '}';
+        return "-----Customer Info: -----\n" +
+                "Account NO : " + customerAccountNo +'\n'+
+                "Name : " + customerName.toUpperCase() + '\n' +
+                "Email : " + customerEmail + '\n' +
+                "Address: " + customerAddress.toUpperCase() + '\n' +
+                "Contact: " + customerContact + '\n' +
+                "-----------X------------";
     }
 
 
