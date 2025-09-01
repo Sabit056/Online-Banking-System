@@ -161,7 +161,10 @@ public class App {
                             System.out.println("-----------------Choose Option-----------------\r\n" +
                                     "1. View Balance \r\n" +
                                     "2. Deposit Money \r\n" +
-                                    "3. Withdraw Money \r\n" );
+                                    "3. Withdraw Money \r\n" +
+                                    "4. Transfer Money \r\n" +
+                                    "0. Logout");
+
                             System.out.print("Select your option : ");
                             int opt = cin.nextInt();
                             cin.nextLine();
@@ -198,6 +201,24 @@ public class App {
                                     System.out.println("Money Withdrawn Successfully...! Your New Balance is : " + balance);
                                 } catch (CustomerException e) {
                                     System.out.println("Error Occured in Withdrawing Money: " + e.getMessage());
+                                }
+                            }
+
+                            if(opt ==4) {
+                                System.out.println("------Transfer Money------");
+                                System.out.print("Enter Recipient Account No : ");
+                                int toAccountNo = cin.nextInt();
+                                System.out.print("Enter Amount to Transfer : ");
+                                int amount = cin.nextInt();
+                                try{
+                                    int check = cd.transferMoney(accountNo,toAccountNo,amount);
+                                    if (check>0) {
+                                        System.out.println("Money Transferred Successfully...! Your New Balance is : " + cd.viewBalance(accountNo));
+                                    }else {
+                                        System.out.println("Failed to Transfer Money. Please check Recipient Account Number and Try Again.");
+                                    }
+                                } catch (Exception e) {
+                                    System.out.println("Error Occured in Transferring Money: " + e.getMessage());
                                 }
                             }
 

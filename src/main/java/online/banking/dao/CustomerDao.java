@@ -12,4 +12,5 @@ public interface CustomerDao {
 
     int withdrawMoney(int customerAccountNo, int amount) throws CustomerException;
 
+    int transferMoney(int fromAccountNo, int toAccountNo, int amount) throws CustomerException;
 }
