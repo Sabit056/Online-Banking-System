@@ -20,6 +20,7 @@ public class AccountantDaoImplementation implements AccountantDao{
     String deleteAccount =  "DELETE i FROM customer i INNER JOIN account a ON i.cid = a.cid WHERE a.cid = ?";
     String customerInfo = "select * from customer i inner join account a on a.cid = i.cid where a.cid = ?";
     String allCustomerInfo = "select * from customer i inner join account a on a.cid = i.cid";
+    String findCustomerID = "SELECT cid FROM customer WHERE customerName = ? AND customerEmail = ?";
 
     //Accountant Login
     @Override
@@ -55,29 +56,34 @@ public class AccountantDaoImplementation implements AccountantDao{
     public int addCustomer(String customerName, String customerEmail, String customerAddress, String customerContact, String customerPassword, int customerBalance) throws CustomerException {
         int cid = -1;
         try(Connection conn = DatabaseConnection.provideConnection()){
-            PreparedStatement ps = conn.prepareStatement(addCustomer,PreparedStatement.RETURN_GENERATED_KEYS);
+            cid = findCustomerId(customerName, customerEmail);
+            if(cid == -1) {
+                PreparedStatement ps = conn.prepareStatement(addCustomer, PreparedStatement.RETURN_GENERATED_KEYS);
 
-            ps.setString(1,customerName);
-            ps.setString(2,customerEmail);
-            ps.setString(3,customerAddress);
-            ps.setString(4,customerContact);
-            String hashPass = BCrypt.withDefaults().hashToString(12, customerPassword.toCharArray());
-            ps.setString(5,hashPass);
+                ps.setString(1, customerName);
+                ps.setString(2, customerEmail);
+                ps.setString(3, customerAddress);
+                ps.setString(4, customerContact);
+                String hashPass = BCrypt.withDefaults().hashToString(12, customerPassword.toCharArray());
+                ps.setString(5, hashPass);
 
-            int x = ps.executeUpdate();
-            if (x > 0) {
+                int x = ps.executeUpdate();
+                if (x > 0) {
 
-                ResultSet rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    cid = rs.getInt(1);
-                    long acNO = addAccount(customerBalance,cid);
-                    System.out.println("Customer Account has been created successfully with ID: " + acNO);
+                    ResultSet rs = ps.getGeneratedKeys();
+                    if (rs.next()) {
+                        cid = rs.getInt(1);
+                        long acNO = addAccount(customerBalance, cid);
+                        System.out.println("Customer Account has been created successfully with AC No: " + acNO);
+                    }
+                } else {
+                    throw new CustomerException("Failed to insert." +
+                            " Please check the details and try again.");
                 }
-            } else {
-                throw new CustomerException("Failed to insert."+
-                        " Please check the details and try again.");
+            }else{
+                long newAC = addAccount(customerBalance, cid);
+                System.out.println("Customer already exists. New account created for existing customer. Account No: " +newAC );
             }
-
         } catch (SQLException e) {
             throw new CustomerException("Error Occured in Creating Customer: " + e.getMessage());
         }
@@ -205,5 +211,22 @@ public class AccountantDaoImplementation implements AccountantDao{
         }
         return ci;
     }
+
+    private int findCustomerId(String customerName, String customerEmail) throws SQLException {
+        int cid = -1;
+        try (Connection conn = DatabaseConnection.provideConnection()) {
+            PreparedStatement ps = conn.prepareStatement(findCustomerID);
+            ps.setString(1, customerName);
+            ps.setString(2, customerEmail);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    cid = rs.getInt("cid");
+                }
+            }
+        }
+        return cid;
+    }
+
 
 }
