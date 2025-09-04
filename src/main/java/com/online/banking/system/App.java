@@ -235,7 +235,7 @@ public class App {
 
                                 try{
                                     int check = cd.transferMoney(accountNo,toAccountNo,amount);
-                                    if (check>0) {
+                                    if (check==1) {
                                         System.out.println("Money Transferred Successfully...! Your New Balance is : " + cd.viewBalance(accountNo));
                                     }else {
                                         System.out.println("Failed to Transfer Money. Please check Recipient Account Number and Try Again.");

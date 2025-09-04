@@ -13,14 +13,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class AccountantDaoImplementation implements AccountantDao{
-    String loginAccountant = "SELECT * FROM accountant WHERE userName = ?";
-    String addCustomer = "insert into customer (customerName, customerEmail, customerAddress, customerContact, customerPassword) values (?,?,?,?,?)";
-    String addAccount = "insert into account (customerAccountNo ,customerBalance, cid) values (?,?,?)";
-    String updateCustomer = "UPDATE customer SET customerAddress = ? WHERE cid = ?";
-    String deleteAccount =  "DELETE i FROM customer i INNER JOIN account a ON i.cid = a.cid WHERE a.cid = ?";
-    String customerInfo = "select * from customer i inner join account a on a.cid = i.cid where a.cid = ?";
-    String allCustomerInfo = "select * from customer i inner join account a on a.cid = i.cid";
-    String findCustomerID = "SELECT cid FROM customer WHERE customerName = ? AND customerEmail = ?";
+    final String loginAccountant = "SELECT * FROM accountant WHERE userName = ?";
+    final String addCustomer = "insert into customer (customerName, customerEmail, customerAddress, customerContact, customerPassword) values (?,?,?,?,?)";
+    final String addAccount = "insert into account (customerAccountNo ,customerBalance, cid) values (?,?,?)";
+    final String updateCustomer = "UPDATE customer SET customerAddress = ? WHERE cid = ?";
+    final String deleteAccount =  "DELETE i FROM customer i INNER JOIN account a ON i.cid = a.cid WHERE a.cid = ?";
+    final String customerInfo = "select * from customer i inner join account a on a.cid = i.cid where a.cid = ?";
+    final String allCustomerInfo = "select * from customer i inner join account a on a.cid = i.cid";
+    final String findCustomerID = "SELECT cid FROM customer WHERE customerName = ? AND customerEmail = ?";
 
     //Accountant Login
     @Override

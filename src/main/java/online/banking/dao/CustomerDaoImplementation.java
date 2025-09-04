@@ -12,10 +12,10 @@ import java.sql.SQLException;
 
 public class CustomerDaoImplementation implements CustomerDao{
 
-    String customerLogin = "SELECT c.customerName, c.customerEmail, c.customerAddress,c.customerContact, c.customerPassword FROM account a INNER JOIN customer c ON a.cid = c.cid WHERE a.customerAccountNo = ?";
-    String viewBalance = "SELECT customerBalance FROM account WHERE customerAccountNo = ?";
-    String depositMoney = "UPDATE account SET customerBalance = customerBalance + ? WHERE customerAccountNo = ?";
-    String withdrawMoney = "UPDATE account SET customerBalance = customerBalance - ? WHERE customerAccountNo = ?";
+    final String customerLogin = "SELECT c.customerName, c.customerEmail, c.customerAddress,c.customerContact, c.customerPassword FROM account a INNER JOIN customer c ON a.cid = c.cid WHERE a.customerAccountNo = ?";
+    final String viewBalance = "SELECT customerBalance FROM account WHERE customerAccountNo = ?";
+    final String depositMoney = "UPDATE account SET customerBalance = customerBalance + ? WHERE customerAccountNo = ?";
+    final String withdrawMoney = "UPDATE account SET customerBalance = customerBalance - ? WHERE customerAccountNo = ?";
 
     @Override
     public Customer customerLogin(int accountNo, String password) throws CustomerException {
@@ -54,73 +54,98 @@ public class CustomerDaoImplementation implements CustomerDao{
 
     @Override
     public int viewBalance(int accountNo) throws CustomerException {
-        int balance = -1;
-        try(Connection conn = DatabaseConnection.provideConnection()){
-            PreparedStatement ps = conn.prepareStatement(viewBalance);
-            ps.setInt(1,accountNo);
-            try(ResultSet rs = ps.executeQuery()){
-                if(rs.next()){
-                    balance = rs.getInt("customerBalance");
-                }else {
-                    throw new CustomerException("Account Not Found with account number: " + accountNo);
-                }
-            }
+        try (Connection conn = DatabaseConnection.provideConnection()) {
+            return viewBalance(accountNo, conn);
         } catch (SQLException e) {
-            throw new CustomerException("SQL Error Occured in Viewing Balance: " + e.getMessage());
+            throw new CustomerException("SQL Error in Viewing Balance: " + e.getMessage());
         }
-        return balance;
     }
 
     @Override
     public int depositMoney(int accountNo, int amount) throws CustomerException {
-        int balance = -1;
-        try(Connection conn = DatabaseConnection.provideConnection()){
-            PreparedStatement ps = conn.prepareStatement(depositMoney);
-            ps.setInt(1,amount);
-            ps.setInt(2, accountNo);
-            int x = ps.executeUpdate();
-            if(x > 0){
-                balance = viewBalance(accountNo);
-            }else {
-                throw new CustomerException("Account Not Found with account number: " + accountNo);
-            }
+        try (Connection conn = DatabaseConnection.provideConnection()) {
+            return depositMoney(accountNo, amount, conn);
         } catch (SQLException e) {
-            throw new CustomerException("SQL Error Occured in Depositing Money: " + e.getMessage());
+            throw new CustomerException("SQL Error in Depositing Money: " + e.getMessage());
         }
-
-        return balance;
     }
 
     @Override
-    public int withdrawMoney(int customerAccountNo, int amount) throws CustomerException {
-        int balance = -1;
-        if(viewBalance(customerAccountNo) < amount){
-            throw new CustomerException("Insufficient Balance");
-        }
-        try(Connection conn = DatabaseConnection.provideConnection()){
-            PreparedStatement ps = conn.prepareStatement(withdrawMoney);
-            ps.setInt(1,amount);
-            ps.setInt(2, customerAccountNo);
-            int x = ps.executeUpdate();
-            if(x > 0){
-                balance = viewBalance(customerAccountNo);
-            }else {
-                throw new CustomerException("Account Not Found with account number: " + customerAccountNo);
-            }
+    public int withdrawMoney(int accountNo, int amount) throws CustomerException {
+        try (Connection conn = DatabaseConnection.provideConnection()) {
+            return withdrawMoney(accountNo, amount, conn);
         } catch (SQLException e) {
-            throw new CustomerException("SQL Error Occured in Withdrawing Money: " + e.getMessage());
+            throw new CustomerException("SQL Error in Withdrawing Money: " + e.getMessage());
         }
-        return balance;
     }
 
     @Override
     public int transferMoney(int fromAccountNo, int toAccountNo, int amount) throws CustomerException {
-        if(viewBalance(fromAccountNo) < amount){
-            throw new CustomerException("Insufficient Balance to transfer" );
+        try (Connection conn = DatabaseConnection.provideConnection()) {
+            conn.setAutoCommit(false);
+
+            if (viewBalance(fromAccountNo, conn) < amount) {
+                throw new CustomerException("Insufficient Balance");
+            }
+
+            int wb = withdrawMoney(fromAccountNo, amount, conn);
+            int db = depositMoney(toAccountNo, amount, conn);
+
+            if (wb > 0 && db > 0) {
+                conn.commit();
+                return 1;
+            } else {
+                conn.rollback();
+                throw new CustomerException("Transaction Failed");
+            }
+        } catch (SQLException e) {
+            throw new CustomerException("SQL Error in Transferring Money: " + e.getMessage());
         }
-        if(withdrawMoney(fromAccountNo,amount) > 0 && depositMoney(toAccountNo,amount) > 0){
-            return 1;
+    }
+
+    // -------------------------
+    // Helper Methods
+    // -------------------------
+
+    private int viewBalance(int accountNo, Connection conn) throws SQLException, CustomerException {
+        try (PreparedStatement ps = conn.prepareStatement(viewBalance)) {
+            ps.setInt(1, accountNo);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("customerBalance");
+                } else {
+                    throw new CustomerException("Account Not Found with account number: " + accountNo);
+                }
+            }
         }
-        return -1;
+    }
+
+    private int withdrawMoney(int accountNo, int amount, Connection conn) throws SQLException, CustomerException {
+        if (viewBalance(accountNo, conn) < amount) {
+            throw new CustomerException("Insufficient Balance");
+        }
+        try (PreparedStatement ps = conn.prepareStatement(withdrawMoney)) {
+            ps.setInt(1, amount);
+            ps.setInt(2, accountNo);
+            int x = ps.executeUpdate();
+            if (x > 0) {
+                return viewBalance(accountNo, conn);
+            } else {
+                throw new CustomerException("Account Not Found with account number: " + accountNo);
+            }
+        }
+    }
+
+    private int depositMoney(int accountNo, int amount, Connection conn) throws SQLException, CustomerException {
+        try (PreparedStatement ps = conn.prepareStatement(depositMoney)) {
+            ps.setInt(1, amount);
+            ps.setInt(2, accountNo);
+            int x = ps.executeUpdate();
+            if (x > 0) {
+                return viewBalance(accountNo, conn);
+            } else {
+                throw new CustomerException("Account Not Found with account number: " + accountNo);
+            }
+        }
     }
 }
